@@ -42,13 +42,13 @@ volatile int done = 0;
 sem_t fullBufLock, emptyBufLock;
 
 
-void random_sleep()
+void random_sleep(unsigned long seed)
 {
         time_t t;
         struct timespec tim, rem;
         srand((unsigned) time(&t));
         tim.tv_sec = 0;
-        tim.tv_nsec = rand() % 1000000000;
+        tim.tv_nsec = rand() % seed;
         //tim.tv_nsec = rand() % 1000000;
         nanosleep(&tim , &rem);
 
@@ -61,7 +61,7 @@ void* producer(void *arg)
 	int i = 0;
 	while(i < strlen(random_str))
 	{
-		random_sleep();
+		random_sleep(100000);
 		sem_wait(&emptyBufLock);
 		buf[index] = random_str[ri++];
 		printf("produced => %c \n", buf[index]);
@@ -81,9 +81,9 @@ void* consumer(void *arg)
 	int i = 0;
 	while(i < strlen(random_str))
 	{
-		random_sleep();
+		random_sleep(1000000000);
 		sem_wait(&fullBufLock);
-                printf("consumed => %c \n",buf[index]);
+                printf("\t\tconsumed => %c \n",buf[index]);
                 sem_post(&emptyBufLock);
                 index = (index + 1) % BUF_SIZE;
 		++i;
